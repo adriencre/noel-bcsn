@@ -35,7 +35,7 @@ npm run dev:netlify
 | `ORGANIZER_EMAIL` | Adresse de réponse d'Éric, également affichée dans la notice données |
 | `EVENT_DATE` | Date lisible, facultative tant que non fixée |
 | `EVENT_LOCATION` | Salle et adresse, facultatives tant que non fixées |
-| `EVENT_CATEGORIES` | Catégories séparées par des virgules. Si absent : champ libre |
+Les catégories sont fixées à **U11 et U13** dans `shared/event.js`, pour le formulaire et la validation serveur. L’ancienne variable Netlify `EVENT_CATEGORIES` est ignorée et peut être supprimée.
 
 3. Déployer, ouvrir `/admin`, se connecter avec le mot de passe choisi. Partager le lien `/` avec les clubs.
 4. Faire une inscription de contrôle, la valider et vérifier la réception du mail avant diffusion. Aucun véritable mail n'a été envoyé pendant le développement.
@@ -52,7 +52,7 @@ Sessions signées de 8 heures, cookie HttpOnly/SameSite Strict/Secure en HTTPS. 
 
 Les mails partent uniquement après une décision d'Éric, jamais lors du dépôt initial. Le statut est conservé même si le service mail n'est pas configuré. L'indication « envoyé » signifie accepté par le prestataire, pas garanti délivré dans la boîte du destinataire. Resend gère l'idempotence des tentatives pendant sa fenêtre de rétention.
 
-La date, la salle et les catégories réelles restent à renseigner. La réponse « non » aux images n'empêche pas l'inscription. La réponse « oui » demande au coach de déclarer qu'il possède les autorisations nécessaires, y compris celles des représentants légaux pour les mineurs. L'organisation doit adapter sa notice et sa durée de conservation à ses pratiques ; aucune suppression automatique n'est activée.
+La date et la salle restent à renseigner. Le tournoi est réservé aux U11 et U13. La réponse « non » aux images n'empêche pas l'inscription. La réponse « oui » demande au coach de déclarer qu'il possède les autorisations nécessaires, y compris celles des représentants légaux pour les mineurs. L'organisation doit adapter sa notice et sa durée de conservation à ses pratiques ; aucune suppression automatique n'est activée.
 
 ```sh
 npm test

@@ -1,6 +1,7 @@
+import { EVENT_CATEGORIES } from '../../shared/event.js';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 export const consentText = 'Autorisez-vous le BCSN à prendre des images de votre équipe pendant le tournoi de Noël et à les diffuser sur ses réseaux sociaux ?';
-export function validateRegistration(body, categories = []) {
+export function validateRegistration(body, categories = EVENT_CATEGORIES) {
   const result = {};
   for (const [key, max] of Object.entries({club:120,category:80,coach:120,email:254,phone:30,notes:1500})) {
     if (body[key] !== undefined && typeof body[key] !== 'string') throw new Error('Champ invalide.');
@@ -8,7 +9,7 @@ export function validateRegistration(body, categories = []) {
     if (result[key].length > max) throw new Error('Un champ est trop long.');
   }
   if (!result.club || !result.category || !result.coach || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(result.email)) throw new Error('Renseignez le club, la catégorie, le coach et une adresse e-mail valide.');
-  if (categories.length && !categories.includes(result.category)) throw new Error('Catégorie invalide.');
+  if (!EVENT_CATEGORIES.includes(result.category) || !categories.includes(result.category)) throw new Error('Catégorie invalide.');
   if (!['yes','no'].includes(body.imageConsent) || body.privacy !== true) throw new Error('Merci de renseigner les autorisations.');
   if (body.imageConsent === 'yes' && body.authority !== true) throw new Error('Confirmez avoir recueilli les autorisations nécessaires.');
   return {...result,email:result.email.toLowerCase(),imageConsent:body.imageConsent,authority:body.authority === true,privacy:true,consentText,consentVersion:'1'};

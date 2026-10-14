@@ -1,8 +1,9 @@
+import { EVENT_CATEGORIES } from '../../shared/event.js';
 import { getStore } from '@netlify/blobs';
 import { randomUUID } from 'node:crypto';
 import { equal, signSession, validSession, validateRegistration } from '../lib/domain.js';
 const json=(data,status=200,headers={})=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store',...headers}});
-const categories=()=> (process.env.EVENT_CATEGORIES||'').split(',').map(s=>s.trim()).filter(Boolean);
+const categories=()=> EVENT_CATEGORIES;
 const store=()=>getStore({name:process.env.CONTEXT==='production'?'christmas-registrations':`christmas-registrations-${process.env.CONTEXT||'dev'}`,consistency:'strong'});
 export default async (req) => {
   const url=new URL(req.url), path=url.pathname.replace(/^.*\/(?:api)\/?/,'');
