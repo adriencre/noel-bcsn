@@ -2,7 +2,7 @@
 
 Site responsive : formulaire public `/`, administration privée `/admin`, aperçu fictif `/admin/demo`.
 
-Le coach renseigne club, catégorie, nom, e-mail, téléphone facultatif, choix explicite concernant les images, et message facultatif. Éric accepte, refuse ou supprime une demande depuis son tableau de bord, puis prévient le coach avec le bouton « Prévenir le coach » (mail pré-rempli dans sa propre messagerie, aucun service à configurer). Recherche, filtres, export Excel et copie du lien public inclus.
+Le coach renseigne club, catégorie, nom, e-mail, téléphone facultatif, choix explicite concernant les images, et message facultatif. Éric accepte, refuse ou supprime une demande depuis son tableau de bord, À la validation, un mail de confirmation avec le lien HelloAsso part automatiquement au coach si le SMTP est configuré ; sinon, ou pour un refus, le bouton « Prévenir le coach » ouvre un mail pré-rempli. Recherche, filtres, export Excel et copie du lien public inclus.
 
 ## Démarrage
 
@@ -30,6 +30,9 @@ npm run dev:netlify
 | --- | --- |
 | `ADMIN_PASSWORD` | Mot de passe privé d'Éric, au moins 12 caractères |
 | `SESSION_SECRET` | Secret aléatoire, au moins 32 caractères ; générer avec `openssl rand -hex 32` |
+| `SMTP_HOST` / `SMTP_PORT` | Serveur SMTP de la boîte qui envoie les confirmations (Gmail : `smtp.gmail.com` / `465`) |
+| `SMTP_USER` / `SMTP_PASS` | Adresse et mot de passe de cette boîte (Gmail : mot de passe d'application) |
+| `MAIL_FROM` | Expéditeur affiché, facultatif (par défaut `SMTP_USER`) |
 | `ORGANIZER_EMAIL` | Adresse de réponse d'Éric, également affichée dans la notice données |
 | `EVENT_DATE` | Date lisible, facultative tant que non fixée |
 | `EVENT_LOCATION` | Salle et adresse, facultatives tant que non fixées |

@@ -1,9 +1,11 @@
 import { registrations, settings, capacitySummary, validateCapacities, withAdminLock } from '../lib/tournament.js';
-import { EVENT_CATEGORIES, EVENT_GROUPS } from '../../shared/event.js';
+import { EVENT_CATEGORIES, EVENT_GROUPS, confirmationMail } from '../../shared/event.js';
+import nodemailer from 'nodemailer';
 import { getStore } from '@netlify/blobs';
 import { equal, signSession, validSession, validateRegistration } from '../lib/domain.js';
 const json=(data,status=200,headers={})=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store',...headers}});
 const categories=()=> EVENT_CATEGORIES;
+const sendConfirmation=row=>{const port=Number(process.env.SMTP_PORT||465);return nodemailer.createTransport({host:process.env.SMTP_HOST,port,secure:port===465,auth:{user:process.env.SMTP_USER,pass:process.env.SMTP_PASS},connectionTimeout:10000}).sendMail({from:process.env.MAIL_FROM||process.env.SMTP_USER,to:row.email,...(process.env.ORGANIZER_EMAIL?{replyTo:process.env.ORGANIZER_EMAIL}:{}),...confirmationMail(row,process.env.EVENT_DATE,process.env.EVENT_LOCATION)});};
 const store=()=>getStore({name:process.env.CONTEXT==='production'?'christmas-registrations':`christmas-registrations-${process.env.CONTEXT||'dev'}`,consistency:'strong'});
 export default async (req) => {
   const url=new URL(req.url), path=url.pathname.replace(/^.*\/(?:api)\/?/,'');
@@ -83,14 +85,19 @@ export default async (req) => {
           if(!summary[row.group]) return {error:'Attribuez un niveau à cette équipe avant de la valider.',code:400};
           if(summary[row.group].remaining===0) return {error:`Le groupe de cette équipe est complet. Augmentez sa capacité ou libérez une place avant de valider.`,code:409};
         }
-        row.status=status;row.updatedAt=new Date().toISOString();
+        const notify=status==='confirmed'&&row.status!=='confirmed';row.status=status;row.updatedAt=new Date().toISOString();
         const saved=await db.setJSON(key,row,{onlyIfMatch:snapshot.etag});
         if(!saved.modified) return {error:'Cette inscription vient de changer. Actualisez avant de réessayer.',code:409};
-        return {row};
+        return {row,notify};
       });
       if(result.busy) return json({error:'Une autre modification est en cours. Réessayez dans quelques instants.'},409);
       if(result.value.error) return json({error:result.value.error},result.value.code);
-      return json({row:result.value.row});
+      const {row,notify}=result.value;let warning=null,mailed=false;
+      if(notify){
+        if(!process.env.SMTP_HOST||!process.env.SMTP_USER||!process.env.SMTP_PASS) warning='Inscription validée. Mail non envoyé : configurez SMTP_HOST, SMTP_USER et SMTP_PASS sur Netlify.';
+        else try{await sendConfirmation(row);mailed=true;}catch(e){console.error('Mail error:',e.code||e.name);warning='Inscription validée, mais l’envoi du mail a échoué. Utilisez « Prévenir le coach ».';}
+      }
+      return json({row,warning,mailed});
     }
     if(path.startsWith('registrations/') && req.method==='DELETE') {
       const id=path.split('/')[1]; if(!/^[a-f0-9-]{36}$/.test(id)) return json({error:'Identifiant invalide.'},400);
