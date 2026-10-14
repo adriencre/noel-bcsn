@@ -75,8 +75,19 @@ export default async (req) => {
     }
     if(path.startsWith('registrations/') && req.method==='PATCH') {
       const id=path.split('/')[1]; if(!/^[a-f0-9-]{36}$/.test(id)) return json({error:'Identifiant invalide.'},400);
-      const {status}=await req.json(); if(!['confirmed','declined','pending'].includes(status)) return json({error:'Statut invalide.'},400);
-      const db=store(),key='registration/'+id;
+      const body=await req.json(),db=store(),key='registration/'+id;
+      if(typeof body.paid==='boolean') {
+        const result=await withAdminLock(db,async()=>{
+          const snapshot=await db.getWithMetadata(key,{type:'json'}),row=snapshot?.data;
+          if(!row) return json({error:'Inscription introuvable.'},404);
+          if(row.status!=='confirmed') return json({error:'Validez l’inscription avant d’enregistrer le paiement.'},400);
+          row.paid=body.paid;row.updatedAt=new Date().toISOString();
+          const saved=await db.setJSON(key,row,{onlyIfMatch:snapshot.etag});
+          return saved.modified?json({row}):json({error:'Cette inscription a changé. Actualisez la page.'},409);
+        });
+        return result.busy?json({error:'Une autre modification est en cours. Réessayez.'},409):result.value;
+      }
+      const {status}=body; if(!['confirmed','declined','pending'].includes(status)) return json({error:'Statut invalide.'},400);
       const result=await withAdminLock(db,async()=>{
         const snapshot=await db.getWithMetadata(key,{type:'json'}),row=snapshot?.data;
         if(!row) return {error:'Inscription introuvable.',code:404};
