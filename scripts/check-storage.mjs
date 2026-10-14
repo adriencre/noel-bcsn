@@ -46,5 +46,8 @@ try {
  assert.equal((await call('registrations/'+legacyId,'PATCH',{status:'confirmed'},cookie)).status,400);
  assert.equal((await call('registrations/'+legacyId,'PUT',{group:'u13-regional'},cookie)).status,200);
  assert.equal((await call('registrations/'+legacyId,'PATCH',{status:'confirmed'},cookie)).status,200);
- console.log('PASS: stockage, capacités persistantes, limite de six, validations concurrentes, libération de place, transfert de niveau et anciennes demandes. Aucun mail envoyé.');
+ assert.equal((await call('registrations/'+legacyId,'DELETE',null,cookie)).status,200);
+ assert.equal((await call('registrations/'+legacyId,'DELETE',null,cookie)).status,404);
+ assert.ok(!(await data()).rows.some(r=>r.id===legacyId));
+ console.log('PASS: stockage, capacités persistantes, limite de six, validations concurrentes, libération de place, transfert de niveau et anciennes demandes, suppression.');
 }finally{await server.stop();await rm(directory,{recursive:true,force:true});}

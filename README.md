@@ -2,7 +2,7 @@
 
 Site responsive : formulaire public `/`, administration privée `/admin`, aperçu fictif `/admin/demo`.
 
-Le coach renseigne club, catégorie, nom, e-mail, téléphone facultatif, choix explicite concernant les images, et message facultatif. Éric accepte ou refuse depuis son tableau de bord ; un e-mail est alors envoyé au coach via Resend. Un échec d'envoi est signalé et peut être retenté sans perdre l'inscription. Recherche, filtres, export Excel et copie du lien public inclus.
+Le coach renseigne club, catégorie, nom, e-mail, téléphone facultatif, choix explicite concernant les images, et message facultatif. Éric accepte, refuse ou supprime une demande depuis son tableau de bord, puis prévient le coach avec le bouton « Prévenir le coach » (mail pré-rempli dans sa propre messagerie, aucun service à configurer). Recherche, filtres, export Excel et copie du lien public inclus.
 
 ## Démarrage
 
@@ -30,15 +30,13 @@ npm run dev:netlify
 | --- | --- |
 | `ADMIN_PASSWORD` | Mot de passe privé d'Éric, au moins 12 caractères |
 | `SESSION_SECRET` | Secret aléatoire, au moins 32 caractères ; générer avec `openssl rand -hex 32` |
-| `RESEND_API_KEY` | Clé API Resend pour les confirmations |
-| `MAIL_FROM` | Expéditeur sur un domaine vérifié dans Resend, ex. `Tournoi BCSN <tournoi@club.fr>` |
 | `ORGANIZER_EMAIL` | Adresse de réponse d'Éric, également affichée dans la notice données |
 | `EVENT_DATE` | Date lisible, facultative tant que non fixée |
 | `EVENT_LOCATION` | Salle et adresse, facultatives tant que non fixées |
 Les catégories sont fixées à **U11 et U13** dans `shared/event.js`, pour le formulaire et la validation serveur. L’ancienne variable Netlify `EVENT_CATEGORIES` est ignorée et peut être supprimée.
 
 3. Déployer, ouvrir `/admin`, se connecter avec le mot de passe choisi. Partager le lien `/` avec les clubs.
-4. Faire une inscription de contrôle, la valider et vérifier la réception du mail avant diffusion. Aucun véritable mail n'a été envoyé pendant le développement.
+4. Faire une inscription de contrôle, la valider puis la supprimer avant diffusion.
 
 ## Stockage durable
 
@@ -50,7 +48,6 @@ Les objets sont sérialisés par le SDK ; aucun fichier de données n'est publi�
 
 Sessions signées de 8 heures, cookie HttpOnly/SameSite Strict/Secure en HTTPS. Aucun mot de passe ni secret dans le frontend. Toutes les lectures et modifications des inscriptions sont authentifiées côté serveur. Validation serveur, contrôle d'origine, honeypot et limitation de débit Netlify. Les envois répétés d'un même formulaire utilisent un identifiant unique pour éviter les doublons lors d'une nouvelle tentative réseau.
 
-Les mails partent uniquement après une décision d'Éric, jamais lors du dépôt initial. Le statut est conservé même si le service mail n'est pas configuré. L'indication « envoyé » signifie accepté par le prestataire, pas garanti délivré dans la boîte du destinataire. Resend gère l'idempotence des tentatives pendant sa fenêtre de rétention.
 
 La date et la salle restent à renseigner. Le tournoi est réservé aux U11 et U13. La réponse « non » aux images n'empêche pas l'inscription. La réponse « oui » demande au coach de déclarer qu'il possède les autorisations nécessaires, y compris celles des représentants légaux pour les mineurs. L'organisation doit adapter sa notice et sa durée de conservation à ses pratiques ; aucune suppression automatique n'est activée.
 
