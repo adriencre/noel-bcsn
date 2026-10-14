@@ -1,0 +1,8 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import api from '../netlify/functions/api.js';
+const call=(path,method='GET',body,headers={})=>api(new Request('https://tournoi.example/api/'+path,{method,headers:{origin:'https://tournoi.example','content-type':'application/json',...headers},...(body?{body:JSON.stringify(body)}:{})}));
+test('les données privées sont inaccessibles sans session',async()=>{assert.equal((await call('registrations')).status,401);assert.equal((await call('registrations/123','PATCH',{status:'confirmed'})).status,401);});
+test('les écritures cross-origin sont refusées',async()=>{assert.equal((await call('login','POST',{password:'test'},{origin:'https://attacker.example'})).status,403);});
+test('connexion, session sécurisée et déconnexion',async()=>{process.env.ADMIN_PASSWORD='mot-de-passe-de-test';process.env.SESSION_SECRET='a'.repeat(32);assert.equal((await call('login','POST',{password:'incorrect'})).status,401);const response=await call('login','POST',{password:process.env.ADMIN_PASSWORD});assert.equal(response.status,200);const cookie=response.headers.get('set-cookie');assert.match(cookie,/HttpOnly/);assert.match(cookie,/SameSite=Strict/);assert.match(cookie,/Secure/);assert.equal((await(await call('session','GET',null,{cookie})).json()).authenticated,true);assert.match((await call('logout','POST',{})).headers.get('set-cookie'),/Max-Age=0/);});
+test('les inscriptions invalides ne touchent pas le stockage',async()=>{assert.equal((await call('registrations','POST',{club:'test'})).status,400);assert.equal((await call('registrations','POST',{website:'spam'})).status,400);});

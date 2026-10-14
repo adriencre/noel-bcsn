@@ -1,0 +1,1 @@
+{"name":"bcsn-noel","private":true,"version":"1.0.0","type":"module","scripts":{"dev":"vite --host 0.0.0.0","build":"vite build","preview":"vite preview --host 0.0.0.0","test":"node --test","dev:netlify":"netlify dev"},"dependencies":{"@netlify/blobs":"^10.0.0","lucide":"^1.57.0","write-excel-file":"^4.1.1"},"devDependencies":{"netlify-cli":"^27.12.1","vite":"^8.3.4"}}
